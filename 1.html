@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiverr Buyer Demand: An Interactive Infographic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Visualization & Content Choices:
+        - Report Info: Fiverr Market Saturation -> Goal: Inform -> Viz/Presentation: Large Text Stat + Brief Explanation -> Interaction: Static -> Justification: Quick impact for a key finding. -> Library/Method: HTML/CSS.
+        - Report Info: Buyer/Seller Challenges -> Goal: Organize/Inform -> Viz/Presentation: HTML/CSS Cards -> Interaction: Static -> Justification: Clear, separate presentation of qualitative points. -> Library/Method: HTML/CSS.
+        - Report Info: Internal/External Demand ID Tools -> Goal: Organize/Inform -> Viz/Presentation: HTML/CSS Accordion/Expandable Sections -> Interaction: Click to expand/collapse details. -> Justification: Allows users to explore tools without initial information overload. -> Library/Method: HTML/CSS/JS.
+        - Report Info: Table 1 - Niche Providers -> Goal: Compare -> Viz/Presentation: Bar Chart -> Interaction: Tooltips on hover. -> Justification: Direct visual comparison of competition levels. -> Library/Method: Chart.js (Canvas).
+        - Report Info: Table 1 - Niche Earning Potential -> Goal: Compare -> Viz/Presentation: Bar Chart -> Interaction: Tooltips on hover. -> Justification: Direct visual comparison of earning potential. -> Library/Method: Chart.js (Canvas).
+        - Report Info: Emerging Niche Categories -> Goal: Inform -> Viz/Presentation: Styled HTML cards with Unicode icons. -> Interaction: Static. -> Justification: Visually appealing way to list qualitative trends. -> Library/Method: HTML/CSS.
+        - Report Info: Table 2 - Gig Optimization Checklist -> Goal: Organize/Inform -> Viz/Presentation: Interactive HTML/CSS Checklist (expandable items) -> Interaction: Click to reveal details for each optimization area. -> Justification: Actionable, step-by-step guide. -> Library/Method: HTML/CSS/JS.
+        - Report Info: Gig Video Impact (40%) -> Goal: Inform -> Viz/Presentation: Donut Chart -> Interaction: Tooltip on hover. -> Justification: Simple and effective way to show a key percentage. -> Library/Method: Chart.js (Canvas).
+        - Report Info: AI Gig Content Generator -> Goal: Assist/Generate -> Viz/Presentation: Input field, button, output area -> Interaction: User input, button click for LLM generation. -> Justification: Direct utility for creating optimized gig content. -> Library/Method: HTML/CSS/JS + Gemini API.
+        - Report Info: AI FAQ Generator -> Goal: Assist/Generate -> Viz/Presentation: Input field, button, output area -> Interaction: User input, button click for LLM generation. -> Justification: Helps sellers anticipate buyer questions and improve gig clarity. -> Library/Method: HTML/CSS/JS + Gemini API.
+        - Report Info: AI Gig Title & Tag Optimizer -> Goal: Assist/Generate -> Viz/Presentation: Input field, button, output area -> Interaction: User input, button click for LLM generation. -> Justification: Helps optimize gig visibility through better titles and tags. -> Library/Method: HTML/CSS/JS + Gemini API.
+        - Report Info: AI Buyer Persona Generator -> Goal: Assist/Generate -> Viz/Presentation: Input field, button, output area -> Interaction: User input, button click for LLM generation. -> Justification: Enhances understanding of target audience for better service tailoring. -> Library/Method: HTML/CSS/JS + Gemini API.
+        - All text content is summarized and rephrased from the report for conciseness.
+        - CONFIRMING NO SVG/Mermaid.
+    -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F9FA; /* Very Light Gray */
+            color: #212529; /* Dark Charcoal */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px; /* Default max-width */
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px; /* Base height for mobile */
+            max-height: 400px; /* Max height */
+        }
+        @media (min-width: 640px) { /* sm breakpoint */
+            .chart-container {
+                height: 350px;
+            }
+        }
+        @media (min-width: 1024px) { /* lg breakpoint */
+            .chart-container {
+                height: 400px;
+                max-height: 450px;
+            }
+        }
+        .section-title {
+            color: #007BFF; /* Bright Blue */
+        }
+        .card {
+            background-color: #FFFFFF; /* White */
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+            padding: 1.5rem; /* p-6 */
+            margin-bottom: 1.5rem; /* mb-6 */
+        }
+        .accordion-header {
+            cursor: pointer;
+            background-color: #E9ECEF; /* Light gray for accordion headers */
+            transition: background-color 0.3s ease;
+        }
+        .accordion-header:hover {
+            background-color: #DEE2E6; /* Slightly darker gray on hover */
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+        .accordion-content.open {
+            max-height: 1000px; /* Large enough to accommodate content */
+        }
+        .unicode-icon {
+            font-size: 1.75rem; /* text-2xl */
+            color: #28A745; /* Green */
+            margin-right: 0.5rem; /* mr-2 */
+        }
+        .nav-button {
+            background-color: #007BFF;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+            white-space: nowrap;
+        }
+        .nav-button:hover {
+            background-color: #0056b3;
+        }
+        .sticky-nav {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background-color: rgba(248, 249, 250, 0.95); /* Semi-transparent background */
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+        .llm-button {
+            background-color: #28A745; /* Green */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+        .llm-button:hover {
+            background-color: #218838; /* Darker green */
+        }
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #007BFF;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="antialiased leading-relaxed">
+
+    <nav class="sticky-nav shadow-md py-3">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap justify-center items-center gap-2 sm:gap-4">
+            <button onclick="scrollToSection('hero')" class="nav-button text-xs sm:text-sm">Intro</button>
+            <button onclick="scrollToSection('ecosystem')" class="nav-button text-xs sm:text-sm">Ecosystem</button>
+            <button onclick="scrollToSection('demand-strategies')" class="nav-button text-xs sm:text-sm">Strategies</button>
+            <button onclick="scrollToSection('niche-spotlight')" class="nav-button text-xs sm:text-sm">Niches</button>
+            <button onclick="scrollToSection('gig-optimization')" class="nav-button text-xs sm:text-sm">Optimization</button>
+            <button onclick="scrollToSection('trust-building')" class="nav-button text-xs sm:text-sm">Trust</button>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+
+        <header id="hero" class="text-center py-12 sm:py-16 scroll-mt-20">
+            <h1 class="text-4xl sm:text-5xl font-bold section-title mb-4">Identifying & Capitalizing on Fiverr Buyer Demand</h1>
+            <p class="text-lg sm:text-xl text-[#212529] max-w-3xl mx-auto">An interactive infographic exploring strategies for success in the dynamic Fiverr marketplace, based on the comprehensive research report.</p>
+        </header>
+
+        <section id="ecosystem" class="my-12 scroll-mt-20">
+            <h2 class="text-3xl font-bold mb-8 text-center section-title">Understanding the Fiverr Ecosystem</h2>
+            <p class="text-center mb-8 max-w-2xl mx-auto">Navigating Fiverr effectively starts with understanding its structure, current market dynamics, and buyer behaviors. This section breaks down these core components as highlighted in the report.</p>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="card">
+                    <h3 class="text-2xl font-semibold mb-3 text-[#007BFF] flex items-center"><span class="unicode-icon">⚙️</span>Fiverr's Structure & Gig Mechanics</h3>
+                    <p class="mb-2">Fiverr organizes services into main categories (e.g., Graphic Design, Digital Marketing) and numerous subcategories. Sellers create "Gigs" with titles, descriptions, tags, and up to three packages. High-quality visuals are crucial.</p>
+                    <p>The report emphasizes that precise categorization is key to narrowing competition and aligning with specific buyer searches.</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-2xl font-semibold mb-3 text-[#007BFF] flex items-center"><span class="unicode-icon">⚠️</span>Market Dynamics: Competition & Saturation</h3>
+                    <p class="mb-2">The platform has seen significant growth, leading to increased competition and reports of oversaturation, with some sellers experiencing reduced organic traffic since late 2023. This necessitates proactive strategies beyond simple Gig listing.</p>
+                    <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                        <p class="text-3xl font-bold text-[#0056b3] text-center">15%</p>
+                        <p class="text-sm text-center text-gray-700">Some established sellers report order volumes as low as 15% of previous levels, indicating a challenging market.</p>
+                    </div>
+                </div>
+                <div class="card md:col-span-2">
+                    <h3 class="text-2xl font-semibold mb-3 text-[#007BFF] flex items-center"><span class="unicode-icon">🤔</span>Buyer Behavior & Expectations</h3>
+                    <p class="mb-2">Buyers search via keywords or categories, comparing profiles, reviews, and pricing. They face risks like scams and low-quality work, making due diligence essential. Sellers may encounter vague requirements or unrealistic expectations.</p>
+                    <p>The report highlights that buyer demand extends to reliability and trust. Sellers addressing these anxieties gain a competitive edge.</p>
+                </div>
+            </div>
+
+            <div class="card mt-12">
+                <h3 class="text-2xl font-semibold mb-4 flex items-center"><span class="unicode-icon">👤</span>✨ AI Buyer Persona Generator</h3>
+                <p class="mb-4">Enter a service you offer, and the AI will generate a brief persona of your ideal buyer, including their pain points and motivations.</p>
+                <div class="flex flex-col sm:flex-row gap-4 mb-4">
+                    <input type="text" id="personaServiceInput" placeholder="e.g., 'Website Design', 'Content Writing'" class="flex-grow p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#007BFF]">
+                    <button id="generatePersonaBtn" class="llm-button flex items-center justify-center">
+                        Generate Persona ✨
+                        <div id="personaSpinner" class="loading-spinner ml-2 hidden"></div>
+                    </button>
+                </div>
+                <div id="personaOutput" class="bg-gray-50 p-4 rounded-md border border-gray-200 min-h-[100px] text-gray-800 whitespace-pre-wrap">
+                    Your AI-generated buyer persona will appear here.
+                </div>
+            </div>
+        </section>
+
+        <section id="demand-strategies" class="my-12 scroll-mt-20">
+            <h2 class="text-3xl font-bold mb-8 text-center section-title">Strategies for Demand Identification</h2>
+            <p class="text-center mb-8 max-w-2xl mx-auto">The report outlines several proactive strategies for identifying what buyers are looking for, combining Fiverr's internal tools with external market research. Explore these methods below.</p>
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-2xl font-semibold mb-4 text-[#28A745]">A. Leveraging Fiverr's Internal Features</h3>
+                    <div id="internalStrategiesAccordion" class="space-y-3"></div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-semibold mb-4 mt-8 text-[#28A745]">B. External Market Research Techniques</h3>
+                    <div id="externalStrategiesAccordion" class="space-y-3"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="niche-spotlight" class="my-12 scroll-mt-20">
+            <h2 class="text-3xl font-bold mb-2 text-center section-title">Spotlight: High-Demand, Low-Competition Niches</h2>
+            <p class="text-center mb-8 max-w-2xl mx-auto">The report identifies specific niches and emerging trends offering significant potential. Specialization is a key strategy to stand out and attract targeted buyer demand.</p>
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                <div class="card">
+                    <h3 class="text-xl font-semibold mb-4 text-center text-[#007BFF]">Niche Competition Levels (Providers)</h3>
+                    <div class="chart-container">
+                        <canvas id="nicheProvidersChart"></canvas>
+                    </div>
+                    <p class="text-xs text-center mt-2 text-gray-600">Lower bars indicate less competition. Based on Table 1 data.</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-xl font-semibold mb-4 text-center text-[#007BFF]">Niche Earning Potential (Annual Est. $)</h3>
+                     <div class="chart-container">
+                        <canvas id="nicheEarningsChart"></canvas>
+                    </div>
+                    <p class="text-xs text-center mt-2 text-gray-600">Illustrates potential income. Based on Table 1 data.</p>
+                </div>
+            </div>
+            <div class="card mb-8">
+                <h3 class="text-2xl font-semibold mb-3 text-[#007BFF]"><span class="unicode-icon">🎯</span>The Power of Niche Specialization</h3>
+                <p>The report strongly advocates for niche specialization (e.g., "minimalist logo design for tech startups") to counter market saturation. This allows sellers to reduce competition, potentially command premium rates, attract a targeted demographic, and build authority.</p>
+            </div>
+            <h3 class="text-2xl font-semibold mb-6 text-center text-[#007BFF]">Emerging Service Categories & Trends (2024-2025)</h3>
+            <div id="emergingTrendsContainer" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+            <div class="card mt-12">
+                <h3 class="text-2xl font-semibold mb-4 flex items-center"><span class="unicode-icon">💡</span>✨ AI Niche Brainstormer</h3>
+                <p class="mb-4">Enter a broad service category, and let the AI suggest specific, potentially high-demand, low-competition sub-niches for Fiverr.</p>
+                <div class="flex flex-col sm:flex-row gap-4 mb-4">
+                    <input type="text" id="nicheInput" placeholder="e.g., 'Digital Marketing', 'Graphic Design'" class="flex-grow p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#007BFF]">
+                    <button id="brainstormNicheBtn" class="llm-button flex items-center justify-center">
+                        Brainstorm Niches ✨
+                        <div id="nicheSpinner" class="loading-spinner ml-2 hidden"></div>
+                    </button>
+                </div>
+                <div id="nicheOutput" class="bg-gray-50 p-4 rounded-md border border-gray-200 min-h-[100px] text-gray-800 whitespace-pre-wrap">
+                    Your AI-generated niche ideas will appear here.
+                </div>
+            </div>
+        </section>
+
+        <section id="gig-optimization" class="my-12 scroll-mt-20">
+            <h2 class="text-3xl font-bold mb-2 text-center section-title">Optimizing Gigs to Meet Demand</h2>
+            <p class="text-center mb-8 max-w-2xl mx-auto">Once demand is identified, effective Gig optimization is crucial for visibility and conversion. The report details key areas, summarized in the interactive checklist below (based on Table 2).</p>
+            <div class="grid md:grid-cols-3 gap-6 items-start">
+                <div class="md:col-span-2 card">
+                    <h3 class="text-xl font-semibold mb-4 text-[#007BFF]">Interactive Gig Optimization Checklist</h3>
+                    <div id="optimizationChecklistAccordion" class="space-y-3"></div>
+                </div>
+                <div class="card">
+                    <h3 class="text-xl font-semibold mb-4 text-center text-[#007BFF]">Impact of Gig Video</h3>
+                    <div class="chart-container h-[250px] sm:h-[300px]">
+                        <canvas id="gigVideoImpactChart"></canvas>
+                    </div>
+                    <p class="text-sm text-center mt-3">Gig videos can increase customer engagement by up to <strong>40%</strong>, according to the report.</p>
+                </div>
+            </div>
+
+            <div class="card mt-12">
+                <h3 class="text-2xl font-semibold mb-4 flex items-center"><span class="unicode-icon">✍️</span>✨ AI Gig Content Generator</h3>
+                <p class="mb-4">Input your service, and the AI will generate a compelling Gig title and description for you.</p>
+                <div class="flex flex-col gap-4 mb-4">
+                    <textarea id="gigServiceInput" rows="3" placeholder="e.g., 'Professional Logo Design', 'SEO-optimized Blog Post Writing'" class="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#007BFF]"></textarea>
+                    <button id="generateGigContentBtn" class="llm-button flex items-center justify-center">
+                        Generate Gig Content ✨
+                        <div id="gigSpinner" class="loading-spinner ml-2 hidden"></div>
+                    </button>
+                </div>
+                <div id="gigContentOutput" class="bg-gray-50 p-4 rounded-md border border-gray-200 min-h-[150px] text-gray-800 whitespace-pre-wrap">
+                    Your AI-generated Gig title and description will appear here.
+                </div>
+            </div>
+
+            <div class="card mt-12">
+                <h3 class="text-2xl font-semibold mb-4 flex items-center"><span class="unicode-icon">🏷️</span>✨ AI Gig Title & Tag Optimizer</h3>
+                <p class="mb-4">Enter your Gig title and a brief description. The AI will suggest optimized titles and relevant SEO tags.</p>
+                <div class="flex flex-col gap-4 mb-4">
+                    <input type="text" id="optimizeGigTitleInput" placeholder="Your current Gig title" class="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#007BFF]">
+                    <textarea id="optimizeGigDescInput" rows="3" placeholder="Brief Gig description (e.g., 'I design modern logos for tech startups.')" class="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#007BFF]"></textarea>
+                    <button id="optimizeGigBtn" class="llm-button flex items-center justify-center">
+                        Optimize Gig ✨
+                        <div id="optimizeSpinner" class="loading-spinner ml-2 hidden"></div>
+                    </button>
+                </div>
+                <div id="optimizeOutput" class="bg-gray-50 p-4 rounded-md border border-gray-200 min-h-[150px] text-gray-800 whitespace-pre-wrap">
+                    Optimized title and tags will appear here.
+                </div>
+            </div>
+
+            <div class="card mt-12">
+                <h3 class="text-2xl font-semibold mb-4 flex items-center"><span class="unicode-icon">❓</span>✨ AI FAQ Generator</h3>
+                <p class="mb-4">Paste your Gig description, and the AI will suggest common buyer questions and answers to enhance clarity.</p>
+                <div class="flex flex-col gap-4 mb-4">
+                    <textarea id="faqGigDescriptionInput" rows="5" placeholder="Paste your full Gig description here..." class="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#007BFF]"></textarea>
+                    <button id="generateFaqBtn" class="llm-button flex items-center justify-center">
+                        Generate FAQs ✨
+                        <div id="faqSpinner" class="loading-spinner ml-2 hidden"></div>
+                    </button>
+                </div>
+                <div id="faqOutput" class="bg-gray-50 p-4 rounded-md border border-gray-200 min-h-[150px] text-gray-800 whitespace-pre-wrap">
+                    Your AI-generated FAQs will appear here.
+                </div>
+            </div>
+        </section>
+
+        <section id="trust-building" class="my-12 scroll-mt-20">
+            <h2 class="text-3xl font-bold mb-8 text-center section-title">Navigating Interactions & Building Trust</h2>
+            <p class="text-center mb-8 max-w-2xl mx-auto">Successful freelancing extends beyond skills to effective communication and trust-building, vital for converting interest and fostering repeat business.</p>
+            <div id="trustBuildingContainer" class="grid md:grid-cols-3 gap-6"></div>
+        </section>
+
+        <section id="conclusion" class="my-12 py-10 bg-blue-50 rounded-lg scroll-mt-20">
+            <h2 class="text-3xl font-bold mb-6 text-center section-title">Conclusion: Sustaining Growth</h2>
+            <p class="text-center max-w-3xl mx-auto text-[#212529]">The Fiverr marketplace is dynamic. The report concludes that sustained success requires continuous adaptation: monitoring trends, refining skills (especially with AI tools), staying responsive, and regularly updating Gigs based on analytics. Approaching Fiverr as an evolving business is key to thriving.</p>
+        </section>
+    </div>
+
+    <footer class="text-center py-8 border-t border-[#007BFF] mt-12">
+        <p class="text-sm text-gray-600">Infographic based on the "Identifying and Capitalizing on Fiverr Buyer Demand" report.</p>
+    </footer>
+
+    <script>
+        Chart.defaults.font.family = 'Inter', 'sans-serif';
+        Chart.defaults.color = '#212529'; // Default text color for charts
+
+        const chartColors = {
+            blue: '#007BFF',
+            green: '#28A745',
+            yellow: '#FFC107',
+            teal: '#17A2B8',
+            purple: '#6F42C1',
+            orange: '#FD7E14'
+        };
+
+        function wrapChartLabels(label, maxWidth = 16) {
+            if (typeof label !== 'string' || label.length <= maxWidth) return label;
+            const words = label.split(' ');
+            let lines = [];
+            let currentLine = '';
+            for (const word of words) {
+                if ((currentLine + word).length > maxWidth && currentLine.length > 0) {
+                    lines.push(currentLine.trim());
+                    currentLine = '';
+                }
+                currentLine += word + ' ';
+            }
+            lines.push(currentLine.trim());
+            return lines;
+        }
+
+        const defaultChartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: { color: '#212529' }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleColor: '#FFFFFF',
+                    bodyColor: '#FFFFFF',
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            const item = tooltipItems[0];
+                            let label = item.chart.data.labels[item.dataIndex];
+                            return Array.isArray(label) ? label.join(' ') : label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: '#212529' },
+                    grid: { color: 'rgba(33, 37, 41, 0.1)' }
+                },
+                x: {
+                    ticks: { color: '#212529', autoSkip: false, maxRotation: 45, minRotation: 45 },
+                    grid: { display: false }
+                }
+            }
+        };
+
+        const nicheProvidersData = {
+            labels: [wrapChartLabels('Spotify Banner Design'), wrapChartLabels('Certificate Designing'), wrapChartLabels('Project 24 Blog Post'), wrapChartLabels('Infographics')],
+            datasets: [{
+                label: 'Number of Providers',
+                data: [160, 1704, 3206, 7000],
+                backgroundColor: [chartColors.blue, chartColors.green, chartColors.yellow, chartColors.teal],
+                borderRadius: 4,
+            }]
+        };
+        const nicheProvidersCtx = document.getElementById('nicheProvidersChart')?.getContext('2d');
+        if (nicheProvidersCtx) new Chart(nicheProvidersCtx, { type: 'bar', data: nicheProvidersData, options: {...defaultChartOptions} });
+
+        const nicheEarningsData = {
+            labels: [wrapChartLabels('Spotify Banner Design'), wrapChartLabels('Certificate Designing'), wrapChartLabels('Project 24 Blog Post'), wrapChartLabels('Infographics (avg.)')],
+            datasets: [{
+                label: 'Max Est. Annual Earning Potential ($)',
+                data: [85000, 24000, 115000, 85918],
+                backgroundColor: [chartColors.purple, chartColors.orange, chartColors.green, chartColors.blue],
+                borderRadius: 4,
+            }]
+        };
+        const nicheEarningsCtx = document.getElementById('nicheEarningsChart')?.getContext('2d');
+        if (nicheEarningsCtx) new Chart(nicheEarningsCtx, { type: 'bar', data: nicheEarningsData, options: {...defaultChartOptions} });
+
+        const gigVideoImpactData = {
+            labels: ['Engagement Increase with Video', 'Baseline (No Video)'],
+            datasets: [{
+                data: [40, 60],
+                backgroundColor: [chartColors.green, chartColors.yellow],
+                hoverBackgroundColor: [chartColors.blue, chartColors.orange],
+                borderColor: '#F8F9FA',
+                borderWidth: 2,
+            }]
+        };
+        const gigVideoImpactCtx = document.getElementById('gigVideoImpactChart')?.getContext('2d');
+        if (gigVideoImpactCtx) new Chart(gigVideoImpactCtx, {
+            type: 'doughnut',
+            data: gigVideoImpactData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { color: '#212529' } }, tooltip: defaultChartOptions.plugins.tooltip },
+                cutout: '60%'
+            }
+        });
+        
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                const yOffset = -70; // Adjust for sticky nav height
+                const y = section.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                window.scrollTo({top: y, behavior: 'smooth'});
+            }
+        }
+
+        function createAccordionItem(id, title, content, parentElementId) {
+            const parent = document.getElementById(parentElementId);
+            if (!parent) return;
+
+            const container = document.createElement('div');
+            container.className = 'card p-0'; // Remove padding from card, add to header/content
+
+            const header = document.createElement('div');
+            header.className = 'accordion-header p-4 rounded-t-md flex justify-between items-center';
+            header.innerHTML = `<h4 class="font-semibold text-md sm:text-lg">${title}</h4><span class="unicode-icon text-xl transform transition-transform duration-300">▼</span>`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.id = `accordion-content-${id}`;
+            contentDiv.className = 'accordion-content p-4 border-t border-gray-200';
+            contentDiv.innerHTML = `<p class="text-sm">${content}</p>`;
+
+            header.onclick = () => {
+                contentDiv.classList.toggle('open');
+                const icon = header.querySelector('.unicode-icon');
+                icon.style.transform = contentDiv.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0deg)';
+            };
+
+            container.appendChild(header);
+            container.appendChild(contentDiv);
+            parent.appendChild(container);
+        }
+        
+        const internalStrategies = [
+            { id: 'search-bar', title: 'Fiverr Search Bar & Auto-Suggest', content: 'Observe popular search terms and precise phrasing buyers use. Auto-suggest reveals high-volume searches, helping align Gig titles/descriptions with actual buyer intent.' },
+            { id: 'top-gigs', title: 'Analyzing Top-Ranking Gigs', content: 'Scrutinize successful competitors\' Gig titles, tags, and descriptions. This validates demand for specific services presented effectively.' },
+            { id: 'get-briefs', title: 'The "Get Briefs" Feature', content: 'Leverages Fiverr\'s algorithm to match sellers with relevant buyer briefs based on profile and Gig qualifications. Meticulously update profiles and set appropriate rates.' },
+            { id: 'fiverr-analytics', title: 'Fiverr Analytics & Seller Plus', content: 'Track Gig impressions, clicks, and orders. Seller Plus offers advanced insights. This data enables continuous refinement of Gigs to align with buyer behavior.' }
+        ];
+        internalStrategies.forEach(strategy => createAccordionItem(strategy.id, strategy.title, strategy.content, 'internalStrategiesAccordion'));
+
+        const externalStrategies = [
+            { id: 'keyword-research', title: 'Advanced Keyword Research', content: 'Use tools like Google Keyword Planner and Google Trends to identify broader market trends and long-tail keywords. Provides a forward-looking perspective on demand.' },
+            { id: 'social-monitoring', title: 'Social Media & Industry Trend Monitoring', content: 'Follow industry leaders, hashtags, and forums (e.g., Reddit) to spot emerging needs, pain points, and service gaps. Offers qualitative data on unarticulated demands.' },
+            { id: 'content-gap', title: 'Analyzing Competitor Content Gaps', content: 'Pinpoint keywords competitors rank for that you don\'t, or topics they haven\'t covered. Helps find underserved areas where buyer demand exists but supply is limited.' }
+        ];
+        externalStrategies.forEach(strategy => createAccordionItem(strategy.id, strategy.title, strategy.content, 'externalStrategiesAccordion'));
+        
+        const emergingTrends = [
+            { icon: '🤖', title: 'AI-Driven Expertise', description: 'AI content creation, Clixlo, Bubble SaaS.' },
+            { icon: '🏢', title: 'Hybrid Workspace Opt.', description: 'Floor Plan Design, City Permits.' },
+            { icon: '⚖️', title: 'Specialized Niche Fields', description: 'Trademark attorneys, Business statisticians.' },
+            { icon: '✉️', title: 'Email Marketing Revamp', description: 'Email Leads, Beehiiv Newsletter.' },
+            { icon: '📦', title: 'Innovative Packaging', description: 'Creative design for customer engagement.' },
+            { icon: '✍️', title: 'Human Content Writers', description: 'Demand for nuanced, creative content AI lacks.' }
+        ];
+        const trendsContainer = document.getElementById('emergingTrendsContainer');
+        if (trendsContainer) {
+            emergingTrends.forEach(trend => {
+                const trendCard = document.createElement('div');
+                trendCard.className = 'card p-4 text-center flex flex-col items-center justify-start';
+                trendCard.innerHTML = `
+                    <span class="unicode-icon text-3xl mb-2">${trend.icon}</span>
+                    <h4 class="font-semibold text-md mb-1">${trend.title}</h4>
+                    <p class="text-xs text-gray-600">${trend.description}</p>
+                `;
+                trendsContainer.appendChild(trendCard);
+            });
+        }
+
+        const optimizationChecklist = [
+            { id: 'seo', title: 'SEO Optimization', content: '<ul><li>Use exact keywords in Gig title & URL.</li><li>Integrate keywords naturally in description & FAQs.</li><li>Use keyword variations in price package headings.</li><li>Select 5 high-relevance tags.</li><li>Avoid keyword stuffing.</li></ul><p class="mt-2 text-xs text-gray-500">Rationale: Enhances visibility in buyer searches and improves ranking.</p>' },
+            { id: 'pricing', title: 'Pricing & Packages', content: '<ul><li>Create 3 tiered packages (Basic, Standard, Premium).</li><li>Set reasonable, competitive pricing.</li><li>Offer quick delivery & free revisions (if feasible).</li><li>Set minimum price for "Get Briefs" (if applicable).</li></ul><p class="mt-2 text-xs text-gray-500">Rationale: Caters to diverse buyer budgets and filters requests.</p>' },
+            { id: 'visuals', title: 'Visuals & Portfolio', content: '<ul><li>Upload high-quality images, videos, PDFs of work.</li><li>Create a Gig video (increases engagement by 40%).</li><li>Utilize Fiverr\'s "My Portfolio" & "Live Gallery".</li></ul><p class="mt-2 text-xs text-gray-500">Rationale: Builds trust and showcases expertise effectively.</p>' },
+            { id: 'promotion', title: 'Promotion', content: '<ul><li>Promote Gigs on social media & relevant groups.</li><li>Engage in off-platform marketing (especially for new Gigs).</li></ul><p class="mt-2 text-xs text-gray-500">Rationale: Drives external traffic and signals value to Fiverr\'s algorithm.</p>' },
+            { id: 'communication', title: 'Communication', content: '<ul><li>Clearly describe deliverables, timelines, details.</li><li>Use clear, concise, professional language in pitches.</li></ul><p class="mt-2 text-xs text-gray-500">Rationale: Manages expectations and establishes credibility.</p>' }
+        ];
+        optimizationChecklist.forEach(item => createAccordionItem(item.id, item.title, item.content, 'optimizationChecklistAccordion'));
+
+        const trustPoints = [
+            { icon: '💬', title: 'Effective Communication', description: 'Clearly articulate deliverables, timelines, and details. Use concise, professional language. Proactively manage expectations. The report highlights this as paramount for repeat business.' },
+            { icon: '🛡️', title: 'Avoiding Scams', description: 'Be vigilant for phishing, off-platform payment requests. Adhere to Fiverr\'s ToS. The report stresses this protects your reputation and demand channels.' },
+            { icon: '🌟', title: 'Leveraging Reviews', description: 'Positive reviews are powerful social proof. Kindly request ratings. High ratings increase Gig attractiveness and conversion, creating a compounding effect on demand.' }
+        ];
+        const trustContainer = document.getElementById('trustBuildingContainer');
+        if(trustContainer){
+            trustPoints.forEach(point => {
+                const pointCard = document.createElement('div');
+                pointCard.className = 'card p-6 flex flex-col items-center text-center sm:items-start sm:text-left';
+                pointCard.innerHTML = `
+                    <span class="unicode-icon text-3xl mb-3">${point.icon}</span>
+                    <h3 class="text-xl font-semibold mb-2 text-[#007BFF]">${point.title}</h3>
+                    <p class="text-sm text-gray-700">${point.description}</p>
+                `;
+                trustContainer.appendChild(pointCard);
+            });
+        }
+
+        // Gemini API Integration
+        const apiKey = ""; // Canvas will provide this at runtime
+
+        // AI Niche Brainstormer
+        const nicheInput = document.getElementById('nicheInput');
+        const brainstormNicheBtn = document.getElementById('brainstormNicheBtn');
+        const nicheOutput = document.getElementById('nicheOutput');
+        const nicheSpinner = document.getElementById('nicheSpinner');
+
+        brainstormNicheBtn.addEventListener('click', async () => {
+            const category = nicheInput.value.trim();
+            if (!category) {
+                nicheOutput.textContent = 'Please enter a broad category to brainstorm niches.';
+                return;
+            }
+
+            nicheOutput.textContent = '';
+            nicheSpinner.classList.remove('hidden');
+            brainstormNicheBtn.disabled = true;
+
+            try {
+                let chatHistory = [];
+                const prompt = `Given the broad service category "${category}", suggest 3-5 highly specific, potentially high-demand, and relatively low-competition sub-niches for Fiverr. For each, provide a brief explanation of why it might be a good opportunity. Format as a numbered list.`;
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    nicheOutput.textContent = text;
+                } else {
+                    nicheOutput.textContent = 'Could not brainstorm niches. Please try again.';
+                }
+            } catch (error) {
+                console.error('Error brainstorming niches:', error);
+                nicheOutput.textContent = 'An error occurred while brainstorming niches. Please check your network connection.';
+            } finally {
+                nicheSpinner.classList.add('hidden');
+                brainstormNicheBtn.disabled = false;
+            }
+        });
+
+        // AI Gig Content Generator
+        const gigServiceInput = document.getElementById('gigServiceInput');
+        const generateGigContentBtn = document.getElementById('generateGigContentBtn');
+        const gigContentOutput = document.getElementById('gigContentOutput');
+        const gigSpinner = document.getElementById('gigSpinner');
+
+        generateGigContentBtn.addEventListener('click', async () => {
+            const service = gigServiceInput.value.trim();
+            if (!service) {
+                gigContentOutput.textContent = 'Please enter a service to generate content.';
+                return;
+            }
+
+            gigContentOutput.textContent = '';
+            gigSpinner.classList.remove('hidden');
+            generateGigContentBtn.disabled = true;
+
+            try {
+                let chatHistory = [];
+                const prompt = `Generate a compelling Fiverr Gig title and a brief, engaging description (around 100-150 words) for a service offering: ${service}. Focus on benefits for the buyer and include relevant keywords. Format as: "Title: [title]\nDescription: [description]".`;
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    gigContentOutput.textContent = text;
+                } else {
+                    gigContentOutput.textContent = 'Could not generate content. Please try again.';
+                }
+            } catch (error) {
+                console.error('Error generating gig content:', error);
+                gigContentOutput.textContent = 'An error occurred while generating content. Please check your network connection.';
+            } finally {
+                gigSpinner.classList.add('hidden');
+                generateGigContentBtn.disabled = false;
+            }
+        });
+
+        // AI Gig Title & Tag Optimizer
+        const optimizeGigTitleInput = document.getElementById('optimizeGigTitleInput');
+        const optimizeGigDescInput = document.getElementById('optimizeGigDescInput');
+        const optimizeGigBtn = document.getElementById('optimizeGigBtn');
+        const optimizeOutput = document.getElementById('optimizeOutput');
+        const optimizeSpinner = document.getElementById('optimizeSpinner');
+
+        optimizeGigBtn.addEventListener('click', async () => {
+            const title = optimizeGigTitleInput.value.trim();
+            const description = optimizeGigDescInput.value.trim();
+            if (!title || !description) {
+                optimizeOutput.textContent = 'Please enter both a Gig title and description to optimize.';
+                return;
+            }
+
+            optimizeOutput.textContent = '';
+            optimizeSpinner.classList.remove('hidden');
+            optimizeGigBtn.disabled = true;
+
+            try {
+                let chatHistory = [];
+                const prompt = `Given the Fiverr Gig title "${title}" and description "${description}", suggest an optimized Gig title (max 80 characters) and 5-7 relevant SEO tags. Format as: "Optimized Title: [title]\nSuggested Tags: [tag1, tag2, tag3...]".`;
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    optimizeOutput.textContent = text;
+                } else {
+                    optimizeOutput.textContent = 'Could not optimize. Please try again.';
+                }
+            } catch (error) {
+                console.error('Error optimizing gig:', error);
+                optimizeOutput.textContent = 'An error occurred while optimizing. Please check your network connection.';
+            } finally {
+                optimizeSpinner.classList.add('hidden');
+                optimizeGigBtn.disabled = false;
+            }
+        });
+
+
+        // AI FAQ Generator
+        const faqGigDescriptionInput = document.getElementById('faqGigDescriptionInput');
+        const generateFaqBtn = document.getElementById('generateFaqBtn');
+        const faqOutput = document.getElementById('faqOutput');
+        const faqSpinner = document.getElementById('faqSpinner');
+
+        generateFaqBtn.addEventListener('click', async () => {
+            const gigDescription = faqGigDescriptionInput.value.trim();
+            if (!gigDescription) {
+                faqOutput.textContent = 'Please paste your Gig description to generate FAQs.';
+                return;
+            }
+
+            faqOutput.textContent = '';
+            faqSpinner.classList.remove('hidden');
+            generateFaqBtn.disabled = true;
+
+            try {
+                let chatHistory = [];
+                const prompt = `Based on the following Fiverr Gig description, generate 3-5 common questions a buyer might ask, along with concise answers. Format as a numbered list of Q&A pairs:\n\nGig Description: "${gigDescription}"`;
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    faqOutput.textContent = text;
+                } else {
+                    faqOutput.textContent = 'Could not generate FAQs. Please try again.';
+                }
+            } catch (error) {
+                console.error('Error generating FAQs:', error);
+                faqOutput.textContent = 'An error occurred while generating FAQs. Please check your network connection.';
+            } finally {
+                faqSpinner.classList.add('hidden');
+                generateFaqBtn.disabled = false;
+            }
+        });
+
+        // AI Buyer Persona Generator
+        const personaServiceInput = document.getElementById('personaServiceInput');
+        const generatePersonaBtn = document.getElementById('generatePersonaBtn');
+        const personaOutput = document.getElementById('personaOutput');
+        const personaSpinner = document.getElementById('personaSpinner');
+
+        generatePersonaBtn.addEventListener('click', async () => {
+            const service = personaServiceInput.value.trim();
+            if (!service) {
+                personaOutput.textContent = 'Please enter a service to generate a buyer persona.';
+                return;
+            }
+
+            personaOutput.textContent = '';
+            personaSpinner.classList.remove('hidden');
+            generatePersonaBtn.disabled = true;
+
+            try {
+                let chatHistory = [];
+                const prompt = `Generate a brief buyer persona (demographics, key pain points, motivations, and ideal outcome) for a Fiverr service offering "${service}". Format as: "Persona: [Name/Title]\nDemographics: [details]\nPain Points: [details]\nMotivations: [details]\nIdeal Outcome: [details]".`;
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    personaOutput.textContent = text;
+                } else {
+                    personaOutput.textContent = 'Could not generate persona. Please try again.';
+                }
+            } catch (error) {
+                console.error('Error generating persona:', error);
+                personaOutput.textContent = 'An error occurred while generating persona. Please check your network connection.';
+            } finally {
+                personaSpinner.classList.add('hidden');
+                generatePersonaBtn.disabled = false;
+            }
+        });
+
+    </script>
+</body>
+</html>
